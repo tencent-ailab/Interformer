@@ -64,7 +64,7 @@ examples/
 ├── uff # [initial ligand conformation] foler contains a single ligand conformation minimized by field foce
 ```
 <a id="docking"></a>
-2. Predicting energy functions file. Download checkpoints from [zenodo](https://zenodo.org/records/13710182).
+2. Predicting energy functions file. Download checkpoints from [zenodo](https://zenodo.org/doi/10.5281/zenodo.10828798).
 
 ```
 DOCK_FOLDER=energy_output
@@ -118,7 +118,7 @@ cat result/demo_dock.round0_ensemble.csv # you can review your final result
 
 ### FAQ
 
-1. Reproduce the time-split, core-set, and PoseBusters docking pose from the reported paper. The parepared data in the Benchmark.zip on [zenodo](https://zenodo.org/records/13710182). 
+1. Reproduce the time-split, core-set, and PoseBusters docking pose from the reported paper. The parepared data in the Benchmark.zip on [zenodo](https://zenodo.org/doi/10.5281/zenodo.10828798). 
 
 ```
 bash scripts/infer/docking_timesplit.sh
