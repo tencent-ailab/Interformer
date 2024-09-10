@@ -1,0 +1,33 @@
+name: base
+
+channels:
+  - conda-forge
+  - rdkit
+  - pytorch
+  - nodefaults
+
+dependencies:
+  ##### quite important to add 'python' here, since adjusting python version is necessary
+  - python
+  - mamba
+
+  - numpy
+  - pandas
+
+  - biopython
+  - rdkit
+  - openbabel>=3.1
+
+  - pytorch
+  - torchvision
+  - torchaudio
+  - cpuonly
+
+  - boost
+
+  - conda-forge::ninja
+
+  - pip
+  - pip:
+      - posebusters
+

@@ -1,0 +1,10 @@
+name: env_for_obabel
+
+channels:
+  - conda-forge
+
+dependencies:
+  ##### quite important to add 'python' here, since adjusting python version is necessary
+  - python
+
+  - openbabel
