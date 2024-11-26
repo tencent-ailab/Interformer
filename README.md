@@ -157,12 +157,16 @@ We anticipate the Interformer will be a powerful tool in practical drug developm
 ### Citation
 ```
 @article{Lai2024,
-  title = {Interformer: An Interaction-Aware Model for Protein-Ligand Docking and Affinity Prediction},
-  url = {http://dx.doi.org/10.21203/rs.3.rs-3995849/v1},
-  DOI = {10.21203/rs.3.rs-3995849/v1},
-  publisher = {Research Square Platform LLC},
-  author = {Lai,  Houtim and Wang,  Longyue and Qian,  Ruiyuan and Ye,  Geyan and Huang,  Juhong and Wu,  Fandi and Wu,  Fang and Zeng,  Xiangxiang and Liu,  Wei},
+  title = {Interformer: an interaction-aware model for protein-ligand docking and affinity prediction},
+  volume = {15},
+  ISSN = {2041-1723},
+  url = {http://dx.doi.org/10.1038/s41467-024-54440-6},
+  DOI = {10.1038/s41467-024-54440-6},
+  number = {1},
+  journal = {Nature Communications},
+  publisher = {Springer Science and Business Media LLC},
+  author = {Lai,  Houtim and Wang,  Longyue and Qian,  Ruiyuan and Huang,  Junhong and Zhou,  Peng and Ye,  Geyan and Wu,  Fandi and Wu,  Fang and Zeng,  Xiangxiang and Liu,  Wei},
   year = {2024},
-  month = mar 
+  month = nov 
 }
 ```
