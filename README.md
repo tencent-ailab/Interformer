@@ -70,7 +70,7 @@ Finally, if everything are correct, the program will perform the prediction with
 ```
 examples/
 ├── demo_dock.csv  # the query csv for interformer prediction [Target=PDB, Molecule ID=name in SDF file, pose_rank=the nth molecule in sdf file]
-├── ligand/$PDB_ligand.sdf  # [reference ligand] foler contains the reference ligand conformation from PDB
+├── ligand/$PDB_docked.sdf  # [reference ligand] foler contains the reference ligand conformation from PDB
 ├── pocket/$PDB_pocket.pdb # [binding pocket site] foler contains the target protein PDB structure 
 ├── uff/$PDB_uff.sdf # [initial ligand conformation] foler contains a single ligand conformation minimized by field foce
 ```
