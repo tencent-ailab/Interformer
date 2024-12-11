@@ -55,13 +55,22 @@ python tools/rdkit_ETKDG_3d_gen.py examples/ligand/ examples/uff  # create inita
 mkdir -p examples/raw/pocket && reduce examples/raw/2qbr.pdb > examples/raw/pocket/2qbr_reduce.pdb  # prepare whole protein
 python tools/extract_pocket_by_ligand.py examples/raw/pocket/ examples/ligand/ 1 && mv examples/raw/pocket/output/2qbr_pocket.pdb examples/pocket  # extract pocket 
 ```
-1. Data should be saved as the following file structure. (We have provided the prepared data for demo, you may skip the above section)
+
+1. Data should be saved as the following file structure and all of the files are required. (We have provided a prepared example data for demo in ``examples/``)
+
+Firstly the program wil locate files in `ligand/`, `pocket/` and `uff/` folders using the PDB ID retrieved from `Target` column in `demo_dock.csv`.
+
+Secondarly, the reference ligand is located by using `pose_rank` column (default=0, represent the nth moelcule in sdf file), if you want to use the name of the SDF file to locate the reference ligand, please use parameter `--use_mid`.
+
+Thirdly, the program will intercept a new binding pocket based on `$PDB_pocket.pdb` (ensure that the reference ligand is removed; this file can be the entire protein PDB file) using the `$PDB_ligand.sdf` with 7A distance. Any cofactor such as Mg, Zn, or other cofactor ligand will be included as part of the binding pocket. Notably, the reference ligand should be as same as the UFF ligand, but if you want to docking a variety of different molecules using a distinct reference ligand, you can use parameter `--uff_as_ligand`.
+
+Finally, if everything are correct, the program will perform the prediction without any errors. For more details, please refer to [bindingdata.py](https://github.com/tencent-ailab/Interformer/blob/master/interformer/data/dataset/bindingdata.py).
 ```
 examples/
-├── demo_dock.csv  # the query csv for interformer prediction
-├── ligand  # [reference ligand] foler contains the reference ligand conformation from PDB
-├── pocket # [binding pocket site] foler contains the target protein PDB structure [can be the whole protein pdb, program will automatically cut out pocket (please remove reference ligand first)]
-├── uff # [initial ligand conformation] foler contains a single ligand conformation minimized by field foce
+├── demo_dock.csv  # the query csv for interformer prediction [Target=PDB, Molecule ID=name in SDF file, pose_rank=the nth molecule in sdf file]
+├── ligand/$PDB_ligand.sdf  # [reference ligand] foler contains the reference ligand conformation from PDB
+├── pocket/$PDB_pocket.pdb # [binding pocket site] foler contains the target protein PDB structure 
+├── uff/$PDB_uff.sdf # [initial ligand conformation] foler contains a single ligand conformation minimized by field foce
 ```
 <a id="docking"></a>
 2. Predicting energy functions file. Download checkpoints from [zenodo](https://zenodo.org/doi/10.5281/zenodo.10828798).
