@@ -38,7 +38,9 @@ cd docking && python setup.py install && cd ../
 
 ### Inference of Docking Pipeline and PoseScore/Affinity Pipeline
 <a id="prepare"></a>
-Here we are using the data from examples/ as demo.
+Here we are using the data from `examples/` as demo.
+
+0. Raw data preparation
 
 The preparation of ligand and protein data involves several steps. First, hydrogen atoms are added to the ligand, and its protonation states are determined using [OpenBabel](https://github.com/openbabel/openbabel). Following this, the initial ligand conformation is generated using the UFF force field with [RDKit](https://github.com/rdkit/rdkit).
 
@@ -56,7 +58,7 @@ mkdir -p examples/raw/pocket && reduce examples/raw/2qbr.pdb > examples/raw/pock
 python tools/extract_pocket_by_ligand.py examples/raw/pocket/ examples/ligand/ 1 && mv examples/raw/pocket/output/2qbr_pocket.pdb examples/pocket  # extract pocket 
 ```
 
-1. Data should be saved as the following file structure and all of the files are required. (We have provided a prepared example data for demo in ``examples/``)
+1. Data should be saved as the following file structure and all of the files are required.
 
 Firstly the program wil locate files in `ligand/`, `pocket/` and `uff/` folders using the PDB ID retrieved from `Target` column in `demo_dock.csv`.
 
