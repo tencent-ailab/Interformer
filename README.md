@@ -58,15 +58,16 @@ mkdir -p examples/raw/pocket && reduce examples/raw/2qbr.pdb > examples/raw/pock
 python tools/extract_pocket_by_ligand.py examples/raw/pocket/ examples/ligand/ 1 && mv examples/raw/pocket/output/2qbr_pocket.pdb examples/pocket  # extract pocket 
 ```
 
-1. Data should be saved as the following file structure and all of the files are required.
+1. Input data strcutures
+The prepared data files should be saved as the following file structure and all files are required.
 
-Firstly the program wil locate files in `ligand/`, `pocket/` and `uff/` folders using the PDB ID retrieved from `Target` column in `demo_dock.csv`.
+Firstly the program will locate files in the `ligand/`, `pocket/`, and `uff/` folders using the PDB ID retrieved from `Target` column in `demo_dock.csv`.
 
-Secondarly, the reference ligand is located by using `pose_rank` column (default=0, represent the nth moelcule in sdf file), if you want to use the name of the SDF file to locate the reference ligand, please use parameter `--use_mid`.
+Secondly, the reference ligand is located by using `pose_rank` column (default=0, representing the nth molecule in the SDF file), if you want to use the name of the SDF file to locate the reference ligand, please use parameter `--use_mid`.
 
-Thirdly, the program will intercept a new binding pocket based on `$PDB_pocket.pdb` (ensure that the reference ligand is removed; this file can be the entire protein PDB file) using the `$PDB_ligand.sdf` with 7A distance. Any cofactor such as Mg, Zn, or other cofactor ligand will be included as part of the binding pocket. Notably, the reference ligand should be as same as the UFF ligand, but if you want to docking a variety of different molecules using a distinct reference ligand, you can use parameter `--uff_as_ligand`.
+Thirdly, the program will intercept a new binding pocket based on `$PDB_pocket.pdb` (ensure that the reference ligand is removed; this file can be the entire protein PDB file) using the `$PDB_ligand.sdf` with 7A distance. Any cofactor such as Mg, Zn, or other cofactor ligand will be included in the binding pocket. Notably, the reference ligand should be as same as the UFF ligand, but if you want to dock a variety of different molecules using a distinct reference ligand, you can use parameter `--uff_as_ligand`.
 
-Finally, if everything are correct, the program will perform the prediction without any errors. For more details, please refer to [bindingdata.py](https://github.com/tencent-ailab/Interformer/blob/master/interformer/data/dataset/bindingdata.py).
+Finally, if everything is correct, the program will perform the prediction without any errors. For more details, please refer to [bindingdata.py](https://github.com/tencent-ailab/Interformer/blob/master/interformer/data/dataset/bindingdata.py).
 ```
 examples/
 ├── demo_dock.csv  # the query csv for interformer prediction [Target=PDB, Molecule ID=name in SDF file, pose_rank=the nth molecule in sdf file]
