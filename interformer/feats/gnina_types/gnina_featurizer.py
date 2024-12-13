@@ -1001,6 +1001,7 @@ def output_complex(energy_output_folder, pdb, uff_ligand, ligand, complex_str, w
         writer.write(ligand)
         writer.close()
     # copy uff ligand
+    # TODO: it only copy once [when VS mode is on, uff file should contain multiple ligands]
     if uff_ligand is not None:
         writer = Chem.SDWriter(f'{energy_output_folder}/uff/{pdb}_uff.sdf')
         writer.write(uff_ligand)

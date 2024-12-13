@@ -31,7 +31,7 @@ def make_csv_by(sdf_f, target, isuff=True, label_df=None):
     if label_df is not None:
         df = merge_label(df, label_df)
     base = os.path.basename(sdf_f)[:-4]
-    df.to_csv('.' + os.path.dirname(sdf_f) + f'/{base}_infer.csv', index=False)
+    df.to_csv(os.path.dirname(sdf_f) + f'/{base}_infer.csv', index=False)
 
 
 if __name__ == '__main__':
