@@ -4,6 +4,8 @@ import pandas as pd
 
 summary_df = pd.read_csv(sys.argv[1])
 ori_df = pd.read_csv(sys.argv[2])
+if 'pose_rank' in ori_df:
+    ori_df = ori_df.drop(columns='pose_rank')
 
 summary_df = summary_df.rename(columns={"pdb_id": "Target"})
 # only taking the required columns

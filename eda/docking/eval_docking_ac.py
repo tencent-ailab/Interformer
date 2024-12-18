@@ -62,14 +62,14 @@ if __name__ == '__main__':
     main(df, name='Full')
     ###
     time_split_pdbs = set([x.strip() for x in open(
-        '/opt/home/revoli/data_worker/interformer/train/diffdock_splits/timesplit_test_sanitizable').readlines()])
+        'eda/docking/splits/timesplit_test_sanitizable').readlines()])
     time_df = df[df[target_key].isin(time_split_pdbs)]
     if len(time_df):
         # print(f"Exclude: {exlclude_pdbs}")
         main(time_df, name="Time Split Test")
     ###
     posebuster_v2_pdbs = set([x.strip()[:4] for x in open(
-        '/opt/home/revoli/data_worker/interformer/train/diffdock_splits/posebusters_pdb_ccd_ids.txt').readlines()])
+        'eda/docking/splits/posebusters_pdb_ccd_ids.txt').readlines()])
     pose_df = df[df[target_key].isin(posebuster_v2_pdbs)]
     if len(pose_df):
         main(pose_df, name="Posebuster v2")

@@ -59,6 +59,7 @@ python tools/extract_pocket_by_ligand.py examples/raw/pocket/ examples/ligand/ 1
 ```
 
 1. Input data strcutures
+
 The prepared data files should be saved as the following file structure and all files are required.
 
 Firstly the program will locate files in the `ligand/`, `pocket/`, and `uff/` folders using the PDB ID retrieved from `Target` column in `demo_dock.csv`.
