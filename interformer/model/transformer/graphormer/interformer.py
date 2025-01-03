@@ -191,9 +191,9 @@ class VinaScoreHead(nn.Module):
                 print(f"[Interformer] Gussian Score ->{target}-{last_id}")
                 data = {'ligand_len': batched_data['ligand_len'].cpu().numpy(),
                         'pocket_len': batched_data['pocket_len'].cpu().numpy(),
-                        'pi': pi_soft.cpu().numpy().squeeze(0),
-                        'mean': mean.cpu().numpy().squeeze(0),
-                        'sigma': sigma.cpu().numpy().squeeze(0),
+                        'pi': pi_soft.cpu().float().numpy().squeeze(0),
+                        'mean': mean.cpu().float().numpy().squeeze(0),
+                        'sigma': sigma.cpu().float().numpy().squeeze(0),
                         'hbond_pair': hbond_pair.cpu().numpy().squeeze(0),
                         'hydro_pair': hydro_pair.cpu().numpy().squeeze(0),
                         'd': d.cpu().numpy().squeeze(0),

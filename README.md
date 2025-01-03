@@ -36,7 +36,7 @@ cd docking && python setup.py install && cd ../
 ```
 
 
-### Inference of Docking Pipeline and PoseScore/Affinity Pipeline
+### Docking and PoseScore/Affinity Pipeline
 <a id="prepare"></a>
 Here we are using the data from `examples/` as demo.
 
@@ -50,23 +50,30 @@ It should be noted that these procedures can be substituted with any other compu
 
 ```
 # Ligand
-obabel examples/raw/2qbr_ligand.sdf -p 7.4 -O examples/ligand/2qbr_docked.sdf  # protonation and adding hydrogen atoms
-python tools/rdkit_ETKDG_3d_gen.py examples/ligand/ examples/uff  # create inital ligand conformation using UFF
+# 2qbr_ligand.sdf is the reference ligand used for locating the binding pocket, it can be replaced by a docking pose inside the binding pocket.
+# To protonate and add hydrogen atoms to the reference ligand.
+obabel examples/raw/2qbr_ligand.sdf -p 7.4 -O examples/ligand/2qbr_docked.sdf
 
+# Generate inital ligand conformation using UFF (or any other ligand prepare program of your choice).  
+python tools/rdkit_ETKDG_3d_gen.py examples/ligand/ examples/uff  
+####
 # Protein
-mkdir -p examples/raw/pocket && reduce examples/raw/2qbr.pdb > examples/raw/pocket/2qbr_reduce.pdb  # prepare whole protein
-python tools/extract_pocket_by_ligand.py examples/raw/pocket/ examples/ligand/ 1 && mv examples/raw/pocket/output/2qbr_pocket.pdb examples/pocket  # extract pocket 
+# Use the Reduce program to preprocess the entire protein.
+mkdir -p examples/raw/pocket && reduce examples/raw/2qbr.pdb > examples/raw/pocket/2qbr_reduce.pdb
+
+# Extract the pocket within 10 Å around the reference ligand. The third argument 1 indicates removal of the CCD ligand from the PDB, use 0 if you do not wish to remove it.
+python tools/extract_pocket_by_ligand.py examples/raw/pocket/ examples/ligand/ 1 && mv examples/raw/pocket/output/2qbr_pocket.pdb examples/pocket
 ```
 
 1. Input data strcutures
 
 The prepared data files should be saved as the following file structure and all files are required.
 
-Firstly the program will locate files in the `ligand/`, `pocket/`, and `uff/` folders using the PDB ID retrieved from `Target` column in `demo_dock.csv`.
+Firstly the program will locate files in the `ligand/`, `pocket/`, and `uff/` folders using the `$PDB` retrieved from `Target` column in `demo_dock.csv`.
 
 Secondly, the reference ligand is located by using `pose_rank` column (default=0, representing the nth molecule in the SDF file), if you want to use the name of the SDF file to locate the reference ligand, please use parameter `--use_mid`.
 
-Thirdly, the program will intercept a new binding pocket based on `$PDB_pocket.pdb` (ensure that the reference ligand is removed; this file can be the entire protein PDB file) using the `$PDB_ligand.sdf` with 7A distance. Any cofactor such as Mg, Zn, or other cofactor ligand will be included in the binding pocket. Notably, the reference ligand should be as same as the UFF ligand, but if you want to dock a variety of different molecules using a distinct reference ligand, you can use parameter `--uff_as_ligand`.
+Thirdly, the program will intercept a new binding pocket based on `$PDB_pocket.pdb` (ensure that the reference ligand is removed; this file can be the entire protein PDB file) using the `$PDB_docked.sdf` with 7A distance. Any cofactor such as Mg, Zn, or other cofactor ligand will be included in the binding pocket. Notably, the reference ligand should be as same as the UFF ligand, but if you want to dock a variety of different molecules using a distinct reference ligand, you can use parameter `--uff_as_ligand`. For more details, please refer to [virtual screening](https://github.com/tencent-ailab/Interformer/tree/master/applications/virtual_screening).
 
 Finally, if everything is correct, the program will perform the prediction without any errors. For more details, please refer to [bindingdata.py](https://github.com/tencent-ailab/Interformer/blob/master/interformer/data/dataset/bindingdata.py).
 ```
@@ -98,24 +105,34 @@ It will produce an energy_output folder.
 energy_output/
 ├── complex  # pocket intercepted through reference ligand
 ├── gaussian_predict  # predicted energy functions file
-├── ligand  # copy from work_path ligand folder [used for locate an autobox (20Ax20Ax20A sampling space) from reference ligand]
-└── uff  # copy from work_path uff folder
+├── ligand  # copy from $work_path ligand folder [used for locate an autobox (20Ax20Ax20A sampling space) from reference ligand]
+└── uff  # copy from $work_path uff folder
 ```
 
 3. Giving the energy files produce docking poses via MonteCarlo sampling.
 
 ```
+# Start docking
+# If you planning to use uff ligand conformation to dock, you can use argument `--uff_folder uff`
 OMP_NUM_THREADS="64,64" python docking/reconstruct_ligands.py -y --cwd $DOCK_FOLDER -y --find_all find
-# --uff_folder uff # if you plan to use uff ligand as inital ligand conformation, you may add this argument.
+
+# Make a docking summary csv 
 python docking/reconstruct_ligands.py --cwd $DOCK_FOLDER --find_all stat
 
-python docking/merge_summary_input.py $DOCK_FOLDER/ligand_reconstructing/stat_concated.csv examples/demo_dock.csv  # gather information of rmsd, enery, num_torsions and poserank(cid, id of the conformation in a sdf)
-cp -r $DOCK_FOLDER/ligand_reconstructing/ examples/infer  # move docked sdf to workpath
+# Merging original csv with the docking summary, gather information of rmsd, enery, num_torsions and poserank(cid, id of the conformation in a sdf)
+python docking/merge_summary_input.py $DOCK_FOLDER/ligand_reconstructing/stat_concated.csv examples/demo_dock.csv
+
+# You can review docking poses in the file located at $DOCK_FOLDER/ligand_reconstructing/$PDB_docked.sdf. 
+# The 21st conformation is the inital input ligand with its binding pocket, which is provided for reference only.
 ```
 <a id="affinity"></a>
 4. Giving the docking poses, predicting its PoseScore and Affinity values.
 
 ```
+# Copy docking pose to the $work_path
+mkdir -p examples/infer && cp -r $DOCK_FOLDER/ligand_reconstructing/*.sdf examples/infer
+
+# Scoring the docking pose, this step will generate a tmp_beta folder. Ensure that you delete this cache before running a new prediction.
 PYTHONPATH=interformer/ python inference.py -test_csv examples/demo_dock.round0.csv \
 -work_path examples/ \
 -ligand_folder infer/ \
@@ -125,8 +142,10 @@ PYTHONPATH=interformer/ python inference.py -test_csv examples/demo_dock.round0.
 -posfix *val_loss* \
 --pose_sel True
 
-cat result/demo_dock.round0_ensemble.csv # you can review your final result
-# energy=the predicted total sum of energy for each pair of protein-ligand atoms, pred_pIC50=the predicted affinity value, pred_pose=the predicted PoseScore(a confident score for the docking pose)
+# you can review your scoring results on the docking pose
+# energy=the predicted total sum of energy for each pair of protein-ligand atoms (the lower is better), pred_pIC50=the predicted pIC50 affinity value, pred_pose=the predicted PoseScore(a confident score for the docking pose)
+# Each prediction can be used for comparision across different ligands within the same protein or even between various protein systems.
+cat result/demo_dock.round0_ensemble.csv 
 ```
 
 ### FAQ
@@ -155,7 +174,7 @@ please review the readme file in eda/ folder.
 
 ```
 # Please review these scripts for further deatils
-
+# The training data will be uploaded soon.
 bash scripts/train/preprocess.sh # used for preprocess training data
 bash scripts/train/run_single.sh # train on one single machine
 ```

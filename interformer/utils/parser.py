@@ -118,7 +118,11 @@ def get_args():
     #####################
     # Hard Code
     # device, default is using all available gpus
-    print(f"Available GPUS:{torch.cuda.device_count()}")
+    n_gpus = torch.cuda.device_count()
+    print(f"Available GPUS:{n_gpus}")
+    if n_gpus == 0:
+        print("using CPU now")
+        args['gpus'] = 'cpu'
     set_random_seed(args['seed'])
     print(f"# Using GPUS:{args['gpus']}")
     #####
