@@ -21,7 +21,7 @@ PYTHONPATH=interformer python interformer/pre.py -data_path /opt/home/revoli/dat
 # Affinity-Normal
 #PYTHONPATH=interformer python interformer/pre.py -data_path /opt/home/revoli/data_worker/interformer/train/general_PL_2020.csv \
 #-work_path /opt/home/revoli/data_worker/interformer/poses \
-#-ligand ligand/final \
+#-ligand ligand/rcsb \
 #-filter_type normal \
 #-dataset sbdd \
 #-reload \
