@@ -32,6 +32,10 @@ if args['energy_output_folder']:
 
 
 def collect_results_gpu(result_part, device='cpu'):
+    if device is None or device == 'cpu' or device == 0:
+        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+    elif isinstance(device, int):
+        device = f'cuda:{device - 1}' # Adjust for zero-based indexing
     rank, world_size = dist.get_rank(), dist.get_world_size()
     # dump result part to tensor with pickle
     part_tensor = torch.tensor(
@@ -39,7 +43,7 @@ def collect_results_gpu(result_part, device='cpu'):
     # gather all result part tensor shape
     shape_tensor = torch.tensor(part_tensor.shape, device=device)
     shape_list = [shape_tensor.clone() for _ in range(world_size)]
-    if device == 'cuda':
+    if 'cuda' in device:
         torch.cuda.synchronize()
     dist.all_gather(shape_list, shape_tensor)
     # padding result part tensor to max length
