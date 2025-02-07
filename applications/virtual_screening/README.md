@@ -10,9 +10,9 @@ example/
 ```
 Below is the script for virtual screening on one protein with many ligands.
 ```
-MAIN=~/eva/Interformer
+MAIN=~/Interformer
 # 1. Create query csv
-python $MAIN/tools/inference/inter_sdf2csv.py example/uff/2qbr_vs10_prepared.sdf 1
+python $MAIN/tools/inference/inter_sdf2csv.py example/uff/2qbr_uff.sdf 1
 # 2. Predict energy files
 PYTHONPATH=$MAIN/interformer python $MAIN/inference.py -test_csv example/uff/2qbr_uff_infer.csv \
 -work_path example/ \
