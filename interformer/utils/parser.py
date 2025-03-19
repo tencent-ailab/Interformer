@@ -48,7 +48,7 @@ def get_args():
     parser.add_argument('-n_jobs', type=int, default=70, required=False, help="Number of worker for data loader.")
     parser.add_argument('-method', type=str, default='Gnina2', required=False, help='Choose Method')
     parser.add_argument('-Code', type=str, default='Flower', required=False, help='Training Code')
-    parser.add_argument('-dataset', type=str, default='PLI', required=False, help='Dataset Type.')
+    parser.add_argument('-dataset', type=str, default='sbdd', required=False, help='Dataset Type.')
     #####################
     # Training
     parser.add_argument('-seed', type=int, default=8888, required=False)
