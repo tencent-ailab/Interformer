@@ -453,6 +453,13 @@ def launch_1_task_local(
     args: argparse.Namespace,
 ) -> None:
     """ """
+    ##### 0. Check if output folder exists
+    ## Check if there exists any precompute file? in the output_folder
+    if os.path.exists(pathtuple.ABSPATH_DIR_OUTPUT):
+        print(f"Previously ABSPATH_DIR_OUTPUT:{pathtuple.ABSPATH_DIR_OUTPUT} path exists, remove it")
+        shutil.rmtree(pathtuple.ABSPATH_DIR_OUTPUT)
+
+
     reconstruct_1_ligand_given_paths(
         path_sdf_ligand=pathtuple.ABSPATH_SDF_LIGAND,
         path_sdf_ref=pathtuple.ABSPATH_SDF_REF,
@@ -668,7 +675,7 @@ def reconstruct_1_ligand_given_paths(
                 [
                     #####
                     shape_pocket,
-                    b_pdbqt_ref.SHAPE_AUTOBOX,
+                    a_pdbqt_ligand.SHAPE_AUTOBOX,
                 ],
                 axis=0,
             )
@@ -759,13 +766,18 @@ def reconstruct_1_ligand_given_paths(
                 #####
                 a_minimizer=a_minimizer_bfgs,
             )
-
-            dict_the_sampled = a_sampler_monte_carlo.sample(
-                b_pdbqt_ref.POSITION_MEAN - (shape_pocket / 2.0),
-                b_pdbqt_ref.POSITION_MEAN + (shape_pocket / 2.0),
-                REPEATS_OF_MONTE_CARLO,
-                STEPS_FOR_EACH_MONTE_CARLO,
-            )
+            # Actual sampling
+            try:
+                dict_the_sampled = a_sampler_monte_carlo.sample(
+                    b_pdbqt_ref.POSITION_MEAN - (shape_pocket / 2.0),
+                    b_pdbqt_ref.POSITION_MEAN + (shape_pocket / 2.0),
+                    REPEATS_OF_MONTE_CARLO,
+                    STEPS_FOR_EACH_MONTE_CARLO,
+                )
+            except Exception:
+                print(f'Error initializing sampler monte carlo skip->index:{index}')
+                continue
+            #
             _, indices_unique = a_pdbqt_ligand.pick_first_k_unique_poses(
                 dict_the_sampled["poses"],
                 k=num_output_poses

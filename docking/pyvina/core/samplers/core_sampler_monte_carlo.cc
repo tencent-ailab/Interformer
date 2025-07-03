@@ -62,8 +62,12 @@ std::vector<minimizers::RecordPoseAndMore> CoreSamplerMonteCarlo::ThreadsampleGi
     }
   }
   if (!is_valid_0) {
-    pyvina::core::wrappers_for_exceptions::Throw1ExceptionAfterPrinting(
-        " :: invalid pose_0 after :: [ " + std::to_string(kNumMaxRerandomizePose) + " ] :: iterations :: ");
+    // Do no throw exception while using omap
+//    pyvina::core::wrappers_for_exceptions::Throw1ExceptionAfterPrinting(
+//        " :: invalid pose_0 after :: [ " + std::to_string(kNumMaxRerandomizePose) + " ] :: iterations :: ");
+    std::cout << " :: invalid pose_0 after :: [ " + std::to_string(kNumMaxRerandomizePose) + " ] :: iterations :: " <<  std::flush;
+    std::vector<minimizers::RecordPoseAndMore> records_thread;
+    return records_thread;
   }
 
   ////////////////////////////////
@@ -162,6 +166,12 @@ std::vector<minimizers::RecordPoseAndMore> CoreSamplerMonteCarlo::SampleGivenMin
 
 //           i, omp_get_thread_num(), omp_get_max_threads(), omp_get_thread_limit());
   }
+  // check if any minimizer failed of not
+  for (i = 0; i < num_repeats_monte_carlo; i++) {
+    if (records_from_repeats[i].size() == 0){
+        throw std::runtime_error("carlo.cc, L170");
+    }
+  }
 
   std::vector<minimizers::RecordPoseAndMore> records_merged;
   for (i = 0; i < num_repeats_monte_carlo; i++) {
@@ -187,15 +197,21 @@ std::vector<minimizers::RecordPoseAndMore> CoreSamplerMonteCarlo::Sample(
     int num_repeats_monte_carlo, int num_steps_each_monte_carlo
 
 ) const {
-  return CoreSamplerMonteCarlo::SampleGivenMinimizer(
 
-      this->core_minimizer_base_,
+  try{
+      return CoreSamplerMonteCarlo::SampleGivenMinimizer(
 
-      corner_min, corner_max,
+          this->core_minimizer_base_,
 
-      num_repeats_monte_carlo, num_steps_each_monte_carlo
+          corner_min, corner_max,
 
-  );
+          num_repeats_monte_carlo, num_steps_each_monte_carlo
+
+      );
+  } catch (const std::exception& e) {
+    throw py::error_already_set(); // 重新抛出给 Python
+  }
+
 }
 
 }  // namespace samplers
