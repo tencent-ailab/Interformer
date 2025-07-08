@@ -1008,9 +1008,6 @@ def reconstruct_1_ligand_given_paths(
                         abspath_sdf_output + "_bust.csv",
                     ]
                 )
-            # 9. remove the tmp_sdf_output
-            print(f' :: :: delete tmp_sdf_output {tmp_sdf_output}')
-            shutil.rmtree(tmp_sdf_output)
 
 
 def launch_tasks(

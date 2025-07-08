@@ -7,6 +7,7 @@
 """
 
 import os
+import shutil
 from typing import Dict, List, Sequence, Tuple, Type, TypeVar, Union
 
 import numpy as np
@@ -51,7 +52,8 @@ class _PdbqtLigand(object):
     ) -> T:
         """
         """
-        _, abspath_sdf_ligand = IowrapperDirNewlyCreated(path_cwd).copy_files_inward(
+        idwc = IowrapperDirNewlyCreated(path_cwd)
+        _, abspath_sdf_ligand = idwc.copy_files_inward(
             path_sdf_ligand,
         )
 
@@ -78,11 +80,18 @@ class _PdbqtLigand(object):
             path_output=abspath_pdbqt_ligand,
         )
 
-        return cls.from_path_pdbqt_ligand(
+        pdbqt_ligand =  cls.from_path_pdbqt_ligand(
             #####
             path_pdbqt_ligand=abspath_pdbqt_ligand,
             wrapper_rdkitmol=wrapper_rdkitmol,
         )
+
+        # remove the temp file
+        if path_cwd is None:
+            if os.path.exists(idwc.ABSPATH_DIR_NEWLY_CREATED):
+                shutil.rmtree(idwc.ABSPATH_DIR_NEWLY_CREATED)
+
+        return pdbqt_ligand
 
     @classmethod
     def from_path_mol2_ligand(
