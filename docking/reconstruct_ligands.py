@@ -381,6 +381,12 @@ def get_args_and_mainparser():
         type=str,
         required=True,
     )
+    mainparser.add_argument(
+        "--continue_dock_index",
+        default=None,
+        type=int,
+        help="Continue docking, it will not remove the output folder.",
+    )
     ########## 2.1. either pdb_id or find_all
     main_a_group = mainparser.add_mutually_exclusive_group(
         required=True,
@@ -455,7 +461,7 @@ def launch_1_task_local(
     """ """
     ##### 0. Check if output folder exists
     ## Check if there exists any precompute file? in the output_folder
-    if os.path.exists(pathtuple.ABSPATH_DIR_OUTPUT):
+    if args.continue_dock_index is None and os.path.exists(pathtuple.ABSPATH_DIR_OUTPUT):
         print(f"Previously ABSPATH_DIR_OUTPUT:{pathtuple.ABSPATH_DIR_OUTPUT} path exists, remove it")
         shutil.rmtree(pathtuple.ABSPATH_DIR_OUTPUT)
 
@@ -480,6 +486,7 @@ def launch_1_task_local(
             "{}_pocket.pdb".format(pathtuple.STR_PDB_ID),
         ) if args.bust else None,
         num_output_poses=args.num_output_poses,
+        continue_dock_index=args.continue_dock_index
     )
 
 
@@ -522,73 +529,76 @@ def cancel_collision_dynamic(
     weight_collision_inter = initweight_collision_inter
 
     addweight_collision_inter = 1.0
-
-    for i in range(10):
-        i_result = (
-            a_evaluator._CORE_EVALUATOR_NORMALSCORE.evaluate_nogrid_given_weights(
-                pose_tmp,
-                weight_intra,
-                weight_collision_inter,
+    try:
+        for i in range(10):
+            i_result = (
+                a_evaluator._CORE_EVALUATOR_NORMALSCORE.evaluate_nogrid_given_weights(
+                    pose_tmp,
+                    weight_intra,
+                    weight_collision_inter,
+                )
             )
-        )
-        # print(
-        #     (
-        #         #####
-        #         "\n\n"
-        #         "##########\n"
-        #         "{}\n"
-        #         "{}\n"
-        #         "##########\n"
-        #         "EXPECTED\n"
-        #         "   DISTANCE INTER MIN [ {} ]\n"
-        #         "VDWDISTANCE INTER MIN [ {} ]\n"
-        #         "##########\n"
-        #         "\n\n"
-        #     ).format(
-        #         i,
-        #         i_result,
-        #         distance_inter_min_expected,
-        #         vdwdistance_inter_min_expected,
-        #     )
-        # )
+            # print(
+            #     (
+            #         #####
+            #         "\n\n"
+            #         "##########\n"
+            #         "{}\n"
+            #         "{}\n"
+            #         "##########\n"
+            #         "EXPECTED\n"
+            #         "   DISTANCE INTER MIN [ {} ]\n"
+            #         "VDWDISTANCE INTER MIN [ {} ]\n"
+            #         "##########\n"
+            #         "\n\n"
+            #     ).format(
+            #         i,
+            #         i_result,
+            #         distance_inter_min_expected,
+            #         vdwdistance_inter_min_expected,
+            #     )
+            # )
 
-        is_pose_ok = True
-        for j_2check, j_lowerbound in [
-            (
-                i_result[3]["distance_inter_min"],
-                distance_inter_min_expected,
-            ),
-            (
-                i_result[3]["vdwdistance_inter_min"],
-                vdwdistance_inter_min_expected,
-            ),
-        ]:
-            if j_lowerbound is not None:
-                if j_2check < j_lowerbound:
-                    is_pose_ok = False
-        if is_pose_ok:
-            break
+            is_pose_ok = True
+            for j_2check, j_lowerbound in [
+                (
+                    i_result[3]["distance_inter_min"],
+                    distance_inter_min_expected,
+                ),
+                (
+                    i_result[3]["vdwdistance_inter_min"],
+                    vdwdistance_inter_min_expected,
+                ),
+            ]:
+                if j_lowerbound is not None:
+                    if j_2check < j_lowerbound:
+                        is_pose_ok = False
+            if is_pose_ok:
+                break
 
-        weight_collision_inter = initweight_collision_inter + addweight_collision_inter
-        addweight_collision_inter *= 2
+            weight_collision_inter = initweight_collision_inter + addweight_collision_inter
+            addweight_collision_inter *= 2
+
+            a_evaluator._CORE_EVALUATOR_NORMALSCORE.SetOption(
+                {
+                    "weight_intra": str(weight_intra),
+                    "weight_collision_inter": str(weight_collision_inter),
+                }
+            )
+            pose_tmp = (a_minimizer.minimize(pose_tmp))["pose"]
+            a_evaluator._CORE_EVALUATOR_NORMALSCORE.ResetOption()
 
         a_evaluator._CORE_EVALUATOR_NORMALSCORE.SetOption(
             {
-                "weight_intra": str(weight_intra),
-                "weight_collision_inter": str(weight_collision_inter),
+                "weight_intra": str(initweight_intra),
+                "weight_collision_inter": str(initweight_collision_inter),
             }
         )
         pose_tmp = (a_minimizer.minimize(pose_tmp))["pose"]
         a_evaluator._CORE_EVALUATOR_NORMALSCORE.ResetOption()
-
-    a_evaluator._CORE_EVALUATOR_NORMALSCORE.SetOption(
-        {
-            "weight_intra": str(initweight_intra),
-            "weight_collision_inter": str(initweight_collision_inter),
-        }
-    )
-    pose_tmp = (a_minimizer.minimize(pose_tmp))["pose"]
-    a_evaluator._CORE_EVALUATOR_NORMALSCORE.ResetOption()
+    except Exception as e:
+        print(e)
+        print('# failed to do cancel_collision_dynamic, skip this part.')
 
     return pose_tmp
 
@@ -610,6 +620,8 @@ def reconstruct_1_ligand_given_paths(
     vdwdistance_inter_min_expected: float = None,
     path_pdb_pocket_4bust: str = None,
     num_output_poses: int = None,
+    #####
+    continue_dock_index: int = None,
 ):
     """ """
     abspath_sdf_ligand = os.path.abspath(path_sdf_ligand)
@@ -640,6 +652,9 @@ def reconstruct_1_ligand_given_paths(
     # index starting from 0., the index of .db file should equal to the rank of sdf file.
     with shelve.open(abspath_pkl_normalscore) as db:
         indices = [int(x) for x in list(db.keys())]
+        # begin at index
+        if continue_dock_index is not None:
+            indices = indices[continue_dock_index:]
         for index in indices:
             LOGGER.info(":" * 30)
             #
@@ -728,7 +743,10 @@ def reconstruct_1_ligand_given_paths(
             assert pocket_len + len_ligand == dict_normalscore['vdw_pair'].shape[
                 0]  # pocket atom + ligand atom should be the same num of complex atoms
             #
-
+            # [Revo] Check whether the num of atom of ligand exceeds 100 or not
+            if len_ligand >= 100:
+                print(f'# Error skipping this query ligand, because it exceeds 100 atoms, index:{index}')
+                continue
             a_evaluator_normalscore = pdbqt_ligand.EvaluatorNormalscore(
                 *args_4evaluator,
                 **kwargs_4evaluator,
@@ -775,7 +793,7 @@ def reconstruct_1_ligand_given_paths(
                     STEPS_FOR_EACH_MONTE_CARLO,
                 )
             except Exception:
-                print(f'Error initializing sampler monte carlo skip->index:{index}')
+                print(f'# Error initializing sampler monte carlo skip->index:{index}')
                 continue
             #
             _, indices_unique = a_pdbqt_ligand.pick_first_k_unique_poses(
@@ -845,8 +863,6 @@ def reconstruct_1_ligand_given_paths(
 
                 ##### skip last initial pose
                 poses_output = [
-                                   #####
-                                   # (_minimizer_collision.minimize(x))["pose"]
                                    cancel_collision_dynamic(
                                        x,
                                        _evaluator_collision,
@@ -992,6 +1008,9 @@ def reconstruct_1_ligand_given_paths(
                         abspath_sdf_output + "_bust.csv",
                     ]
                 )
+            # 9. remove the tmp_sdf_output
+            print(f' :: :: delete tmp_sdf_output {tmp_sdf_output}')
+            shutil.rmtree(tmp_sdf_output)
 
 
 def launch_tasks(

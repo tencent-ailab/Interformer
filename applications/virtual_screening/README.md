@@ -1,6 +1,6 @@
-This is a virtual screening demonstration where numerous ligands are docked into a rigid protein pocket, and their affinity values are scored. For this example, we are using a dataset located in the `examples/` folder.
+This is a virtual screening demonstration where numerous ligands are docked into a rigid protein pocket, and their affinity values are scored. For this example, we are using a dataset located in the `vs_examples/` folder.
 ```
-example/
+vs_example/
 ├── ligand
 │   └── 2qbr_docked.sdf (Ensure that it is a bound ligand conformation inside the binding pocket, as it is the best choice. This sdf file can be obtained from RCSB website.)
 ├── pocket
@@ -8,40 +8,12 @@ example/
 └── uff
     └── 2qbr_uff.sdf (Prepare a force filed minimized SDF file containing all the ligands you wish to dock.)
 ```
-Below is the script for virtual screening on one protein with many ligands.
+`vs_inference.sh` is the script for virtual screening on one protein with many ligands.
+Please note that the docking program will skip ligands that fail processing or contain more than 100 atoms.
 ```
-MAIN=~/Interformer
-# 1. Create query csv
-python $MAIN/tools/inference/inter_sdf2csv.py example/uff/2qbr_uff.sdf 1
-# 2. Predict energy files
-PYTHONPATH=$MAIN/interformer python $MAIN/inference.py -test_csv example/uff/2qbr_uff_infer.csv \
--work_path example/ \
--ensemble $MAIN/checkpoints/v0.2_energy_model \
--gpus 1 \
--batch_size 1 \
--posfix *val_loss* \
--energy_output_folder energy_output \
--uff_as_ligand \
--debug \
--reload
-# 3. Docking
-# [VS mode] need to refresh the uff ligand file
-cp example/uff/2qbr_uff.sdf energy_output/uff/
-OMP_NUM_THREADS="64,64" python $MAIN/docking/reconstruct_ligands.py -y --cwd ./energy_output --find_all --uff_folder uff find
-# 4. Scoring
-cp -r energy_output/ligand_reconstructing/ example/infer/
-python $MAIN/tools/inference/inter_sdf2csv.py example/infer/2qbr_docked.sdf 0
-
-PYTHONPATH=$MAIN/interformer/ python $MAIN/inference.py -test_csv example/infer/2qbr_docked_infer.csv  \
--work_path example/ \
--ligand_folder infer/ \
--ensemble $MAIN/checkpoints/v0.2_affinity_model/model* \
--use_ff_ligands '' \
--gpus 1 \
--batch_size 20 \
--posfix *val_loss* \
---pose_sel True
-
-# 5. Review result
-cat result/2qbr_docked_infer_ensemble.csv
+# copy vs_example/ and script to the Interformer/ soure code folder
+cp -r vs_example/ vs_inference.sh ../../
+cd ../../
+# start virtual screening using Interformer
+sh vs_inference.sh
 ```
