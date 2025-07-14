@@ -69,7 +69,6 @@ def get_args():
     parser.add_argument('-filter_type', default='normal', required=False, type=str)
     # NN-docking
     parser.add_argument('-use_ff_ligands', type=str, default='uff', required=False)
-    parser.add_argument('-num_ff_mols', type=int, default=1, required=False)
     ####################
     # Loss
     parser.add_argument('-neg_weight', type=float, default=1., required=False)
@@ -91,6 +90,7 @@ def get_args():
     parser.add_argument('-uff_as_ligand', default=False, action='store_true', required=False,
                         help='Switch to uff as the reference ligand to do predictions,'
                              ' using it while uff ligand are not the same with reference ligands.')
+    parser.add_argument('-vs', default=False, action='store_true', required=False, help='If the sdf file is too large, turn on this option, to load ligand at once.')
     ####
     # JIZHI
     import json

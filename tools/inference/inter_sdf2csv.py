@@ -19,8 +19,8 @@ def make_csv_by(sdf_f, target, isuff=True, label_df=None):
     data = []
     suppl = Chem.SDMolSupplier(sdf_f)
     for i, mol in enumerate(suppl):
-        m_id = mol.GetProp('_Name')
         if mol is not None:
+            m_id = mol.GetProp('_Name')
             if isuff:
                 data.append([target, 0, i, m_id])
             else:

@@ -4,7 +4,7 @@ import pandas as pd
 import os
 from data.data_utils import pmap
 from feats.gnina_types.obabel_api import merge_sdf_pdb_by_rdkit
-from feats.third_rd_lib import load_by_rdkit, sdf_load, sdf_load_full
+from feats.third_rd_lib import load_by_rdkit, sdf_load, sdf_load_full, load_sdf_at_once
 import glob
 from data.data_stucture.lmdb_dataset import Subset
 from data.dataset.common_dataset import Dataset
@@ -222,7 +222,10 @@ class BindingData(Dataset):
              mids[i], ids[i], row['Target']]
             for i, row in
             df.iterrows()]
-        res = pmap(sdf_load, sdfs_data, use_mid=self.args['use_mid'], n_jobs=n_jobs)
+        if self.args['vs']:
+            res = load_sdf_at_once(sdfs_data, use_mid=self.args['use_mid'])
+        else:
+            res = pmap(sdf_load, sdfs_data, use_mid=self.args['use_mid'], n_jobs=n_jobs)
         docked = {}
         for r in res:
             if r:

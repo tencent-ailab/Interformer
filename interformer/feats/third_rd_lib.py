@@ -5,6 +5,7 @@ from collections import defaultdict
 from rdkit import RDLogger
 from rdkit.Geometry import Point3D
 import torch
+from tqdm import tqdm
 
 lg = RDLogger.logger()
 lg.setLevel(RDLogger.CRITICAL)
@@ -43,6 +44,40 @@ def sdf_load(row, use_mid=False, warning=True):
         return ligands[id], id_name
 
     return None  # failed
+
+def load_sdf_at_once(sdfs_data, use_mid=False):
+    print(f"# [vs mode] loading sdf_file at once")
+    # sdfs_data=[sdf_file, mid, id, pdb]
+    unique_sdf_file = set([x[0] for x in sdfs_data])
+    sdf_f_to_mol = {}
+    for sdf_file in unique_sdf_file:
+        try:
+            suppl = Chem.SDMolSupplier(sdf_file, sanitize=True, removeHs=True)
+            sdf_f_to_mol[sdf_file] = suppl
+        except OSError as e:
+            print(f"# error load<-{sdf_file}")
+            return None
+    # 2. get the specific ligand from sdf
+    data = []
+    for row in tqdm(sdfs_data):
+        sdf_file, mid, id, pdb = row
+        # extract ligand from mol
+        ligands = sdf_f_to_mol[sdf_file]
+        if use_mid:
+            matched_id_ligands = []
+            for l in ligands:
+                if l:
+                    name = l.GetProp('_Name')
+                    if name == mid:
+                        matched_id_ligands.append(l)
+            ligands = matched_id_ligands
+        if id < len(ligands):
+            id_name = f'{pdb}_{mid}_{str(id)}'
+            data.append([ligands[id], id_name])
+        else:
+            data.append(None)
+    #
+    return data
 
 
 def load_by_rdkit(input_file, format='sdf', pose=0, warning=True):
