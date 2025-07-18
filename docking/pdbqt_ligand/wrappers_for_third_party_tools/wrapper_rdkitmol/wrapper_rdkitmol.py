@@ -192,10 +192,14 @@ class WrapperRdkitmol(object):
         if append2sdf:
             io_writer = open(abspath_sdf_to_save, 'a')
         else:
-            io_writer = abspath_sdf_to_save
+            # rewrite the sdf
+            io_writer = open(abspath_sdf_to_save, 'w')
+
         a_sdwriter = Chem.SDWriter(io_writer)
         for i_wrapper in wrappers_rdkitmol:
             a_sdwriter.write(i_wrapper._RDKITMOL)
+        a_sdwriter.close()
+        io_writer.close()
 
     @classmethod
     def extract_mol0_only_4sdf(
